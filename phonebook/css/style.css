@@ -137,5 +137,15 @@ body {
   background-image: url('../img/edit.svg');
 }
 
+th:nth-child(2),
+th:nth-child(3) {
+  cursor: pointer;
+}
+
+th, td {
+  text-align: center;
+}
+
+
 
 

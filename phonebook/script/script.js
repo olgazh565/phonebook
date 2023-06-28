@@ -90,6 +90,7 @@ const data = [
                 <th>Имя</th>
                 <th>Фамилия</th>
                 <th>Телефон</th>
+                <th>Редактировать</th>
             </tr>
         `);
 
@@ -151,7 +152,7 @@ const data = [
         };
     };
 
-    const createRow = ({ name: firstName, surname, phone }) => {
+    const createRow = ({name: firstName, surname, phone}) => {
         const tr = document.createElement('tr');
         tr.classList.add('contact');
         const tdDel = document.createElement('td');
@@ -258,7 +259,21 @@ const data = [
             btnDel: buttonGroup.btns[1],
             formOverlay: form.overlay,
             form: form.form,
+            table,
         };
+    };
+
+    // сортировка
+
+    const sortColumn = (colIndex, list) => {
+        const rowsArray = Array.from(list.rows);
+
+        rowsArray.sort((rowA, rowB) => (
+            rowA.cells[colIndex].textContent >
+            rowB.cells[colIndex].textContent ? 1 : -1
+        ));
+
+        list.append(...rowsArray);
     };
 
     const init = (selectorApp, title) => {
@@ -272,6 +287,7 @@ const data = [
             btnDel,
             formOverlay,
             form,
+            table,
         } = phonebook;
 
         //  Функционал
@@ -312,6 +328,20 @@ const data = [
             });
             list.append(contact);
         }, 2000);
+
+        // Сортировка
+
+        table.addEventListener('click', e => {
+            const target = e.target;
+            const index = target.cellIndex;
+
+            if (target.tagName === 'TH' &&
+                (target.textContent === 'Имя' ||
+                target.textContent === 'Фамилия')
+            ) {
+                sortColumn(index, list);
+            }
+        });
     };
 
     window.phoneBookInit = init;
