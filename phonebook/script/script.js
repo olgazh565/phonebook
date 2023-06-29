@@ -152,7 +152,7 @@ const data = [
         };
     };
 
-    const createRow = ({name: firstName, surname, phone}) => {
+    const createRow = ({ name: firstName, surname, phone }) => {
         const tr = document.createElement('tr');
         tr.classList.add('contact');
         const tdDel = document.createElement('td');
@@ -263,19 +263,6 @@ const data = [
         };
     };
 
-    // сортировка
-
-    const sortColumn = (colIndex, list) => {
-        const rowsArray = Array.from(list.rows);
-
-        rowsArray.sort((rowA, rowB) => (
-            rowA.cells[colIndex].textContent >
-            rowB.cells[colIndex].textContent ? 1 : -1
-        ));
-
-        list.append(...rowsArray);
-    };
-
     const init = (selectorApp, title) => {
         const app = document.querySelector(selectorApp);
         const phonebook = renderPhoneBook(app, title);
@@ -331,15 +318,45 @@ const data = [
 
         // Сортировка
 
+        let sortUp = true;
+
         table.addEventListener('click', e => {
             const target = e.target;
             const index = target.cellIndex;
 
             if (target.tagName === 'TH' &&
                 (target.textContent === 'Имя' ||
-                target.textContent === 'Фамилия')
+                    target.textContent === 'Фамилия')
             ) {
-                sortColumn(index, list);
+                const rowsArray = Array.from(list.rows);
+
+                rowsArray.sort((rowA, rowB) => (
+                    rowA.cells[index].textContent >
+                        rowB.cells[index].textContent ? 1 : -1
+                ));
+
+                // Добавляем классы для отображения стрелок
+                target.classList.add('sorted');
+
+                if (sortUp) {
+                    list.append(...rowsArray);
+                    target.classList.add('sorted-up');
+                    target.classList.remove('sorted-down');
+                } else {
+                    list.append(...rowsArray.reverse());
+                    target.classList.remove('sorted-up');
+                    target.classList.add('sorted-down');
+                }
+                // Получаем все эл-ты, где были добавлены классы
+                const sortedtThs = document.querySelectorAll('.sorted');
+                // Удаляем классы у эл-та, не являющимся target
+                sortedtThs.forEach(th => {
+                    if (th !== target) {
+                        th.className = '';
+                    }
+                });
+
+                sortUp = !sortUp;
             }
         });
     };

@@ -147,5 +147,23 @@ th, td {
 }
 
 
+th.sorted {
+    position: relative;
+}
+
+th.sorted-down::after {
+	content: "▼";
+  position: absolute;
+  right: 8px;
+  
+}
+
+th.sorted-up::after {
+	content: "▲";
+  position: absolute;
+  right: 8px;
+  
+}
+
 
 
