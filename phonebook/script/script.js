@@ -92,9 +92,10 @@ const data = [
         thead.insertAdjacentHTML('beforeend', `
             <tr>
                 <th class="delete">Удалить</th>
-                <th>Имя</th>
-                <th>Фамилия</th>
+                <th data-sort-order="1" data-name="name">Имя</th>
+                <th data-sort-order="1" data-name="surname">Фамилия</th>
                 <th>Телефон</th>
+                <th>Редактировать</th>
             </tr>
         `);
 
@@ -156,7 +157,7 @@ const data = [
         };
     };
 
-    const createRow = ({name: firstName, surname, phone}) => {
+    const createRow = ({ name: firstName, surname, phone }) => {
         const tr = document.createElement('tr');
         tr.classList.add('contact');
         const tdDel = document.createElement('td');
@@ -263,6 +264,7 @@ const data = [
             btnDel: buttonGroup.btns[1],
             formOverlay: overlay,
             form,
+            table,
         };
     };
 
@@ -324,7 +326,45 @@ const data = [
         });
     };
 
+    // Сортировка
+
+    const sortControl = (table, list) => {
+        const ths = document.querySelectorAll('[data-sort-order]');
+
+        table.addEventListener('click', e => {
+            const target = e.target;
+            const index = target.cellIndex;
+            const sortOrder = e.target.dataset.sortOrder;
+            const field = e.target.dataset.name;
+
+            // Сброс sort-order на default для эл-тов, не являющихся target
+            ths.forEach(th => {
+                if (th !== target) {
+                    th.dataset.sortOrder = 1;
+                }
+            });
+
+            if (target.tagName === 'TH' && (index === 1 || index === 2)) {
+                list.innerHTML = '';
+
+                // сортировка массива данных по выбранному полю
+                const byField = (field) =>
+                    (a, b) =>
+                        (a[field] > b[field] ? 1 * sortOrder : -1 * sortOrder);
+
+                data.sort(byField(field));
+                renderContacts(list, data);
+
+                // Добавляем/удаляем класс у target
+                ths.forEach(th => th.classList.toggle('sorted', th === target));
+
+                e.target.dataset.sortOrder *= -1;
+            }
+        });
+    };
+
     const init = (selectorApp, title) => {
+        console.log(data);
         const app = document.querySelector(selectorApp);
 
         const {
@@ -334,6 +374,7 @@ const data = [
             btnDel,
             formOverlay,
             form,
+            table,
         } = renderPhoneBook(app, title);
 
         //  Функционал
@@ -344,6 +385,7 @@ const data = [
         hoverRow(allRow, logo);
         deleteControl(btnDel, list);
         formControl(form, list, closeModal);
+        sortControl(table, list);
     };
 
     window.phoneBookInit = init;
