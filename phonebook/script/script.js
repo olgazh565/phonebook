@@ -1,8 +1,7 @@
 'use strict';
 
 {
-    const getStorage = key => (localStorage.getItem(key) ?
-        JSON.parse(localStorage.getItem(key)) : []);
+    const getStorage = key => (JSON.parse(localStorage.getItem(key)) || []);
 
     const setStorage = (key, obj) => {
         const data = getStorage(key);
