@@ -1,32 +1,19 @@
 'use strict';
 
-const data = [
-    {
-        name: 'Иван',
-        surname: 'Петров',
-        phone: '+79514545454',
-    },
-    {
-        name: 'Игорь',
-        surname: 'Семёнов',
-        phone: '+79999999999',
-    },
-    {
-        name: 'Семён',
-        surname: 'Иванов',
-        phone: '+79800252525',
-    },
-    {
-        name: 'Мария',
-        surname: 'Попова',
-        phone: '+79876543210',
-    },
-];
-
 {
-    const addContactData = contact => {
-        data.push(contact);
-        console.log(data);
+    const getStorage = key => (localStorage.getItem(key) ?
+        JSON.parse(localStorage.getItem(key)) : []);
+
+    const setStorage = (key, obj) => {
+        const data = getStorage(key);
+        data.push(obj);
+        localStorage.setItem(key, JSON.stringify(data));
+    };
+
+    const removeStorage = phone => {
+        const data = getStorage('phonebook');
+        const newData = data.filter(item => item.phone !== phone);
+        localStorage.setItem('phonebook', JSON.stringify(newData));
     };
 
     const createContainer = () => {
@@ -92,8 +79,8 @@ const data = [
         thead.insertAdjacentHTML('beforeend', `
             <tr>
                 <th class="delete">Удалить</th>
-                <th data-sort-order="1" data-name="name">Имя</th>
-                <th data-sort-order="1" data-name="surname">Фамилия</th>
+                <th data-name="name">Имя</th>
+                <th data-name="surname">Фамилия</th>
                 <th>Телефон</th>
                 <th>Редактировать</th>
             </tr>
@@ -248,7 +235,7 @@ const data = [
         ]);
 
         const table = createTable();
-        const {form, overlay} = createForm();
+        const { form, overlay } = createForm();
         const footer = createFooter();
         const copyrightText = createCopyright(title);
 
@@ -304,7 +291,10 @@ const data = [
         list.addEventListener('click', e => {
             const target = e.target;
             if (target.closest('.del-icon')) {
-                target.closest('.contact').remove();
+                const removedContact = target.closest('.contact');
+                removedContact.remove();
+                const phone = removedContact.cells[3].textContent;
+                removeStorage(phone);
             }
         });
     };
@@ -320,7 +310,7 @@ const data = [
             const newContact = Object.fromEntries(formData);
 
             addContactPage(newContact, list);
-            addContactData(newContact);
+            setStorage('phonebook', newContact);
             form.reset();
             closeModal();
         });
@@ -328,45 +318,76 @@ const data = [
 
     // Сортировка
 
+    const sortByField = (data, list, field, order) => {
+        list.innerHTML = '';
+
+        const sortField = (field) =>
+            (a, b) =>
+                (a[field] > b[field] ? 1 * order : -1 * order);
+
+        data.sort(sortField(field));
+        renderContacts(list, data);
+    };
+
+    const setSortStorage = (field, order) => {
+        localStorage.setItem('sortField', JSON.stringify({
+            field,
+            order,
+        }));
+    };
+
     const sortControl = (table, list) => {
-        const ths = document.querySelectorAll('[data-sort-order]');
+        const ths = document.querySelectorAll('[data-name]');
 
         table.addEventListener('click', e => {
             const target = e.target;
             const index = target.cellIndex;
-            const sortOrder = e.target.dataset.sortOrder;
-            const field = e.target.dataset.name;
+            const field = target.dataset.name;
+            const sortOrder = (
+                target.dataset.sortOrder = -(target.dataset.sortOrder || -1)
+            );
+            const data = getStorage('phonebook');
 
-            // Сброс sort-order на default для эл-тов, не являющихся target
+            // Удалить data-sort-order у эл-тов, не являющихся target
             ths.forEach(th => {
                 if (th !== target) {
-                    th.dataset.sortOrder = 1;
+                    delete th.dataset.sortOrder;
                 }
             });
 
             if (target.tagName === 'TH' && (index === 1 || index === 2)) {
-                list.innerHTML = '';
-
                 // сортировка массива данных по выбранному полю
-                const byField = (field) =>
-                    (a, b) =>
-                        (a[field] > b[field] ? 1 * sortOrder : -1 * sortOrder);
-
-                data.sort(byField(field));
-                renderContacts(list, data);
+                sortByField(data, list, field, sortOrder);
 
                 // Добавляем/удаляем класс у target
                 ths.forEach(th => th.classList.toggle('sorted', th === target));
 
-                e.target.dataset.sortOrder *= -1;
+                // Сохраняем данные в localStorage
+                setSortStorage(field, sortOrder);
             }
         });
     };
 
-    const init = (selectorApp, title) => {
-        console.log(data);
-        const app = document.querySelector(selectorApp);
+    const sortControlInit = (data, list) => {
+        const storage = JSON.parse(localStorage.getItem('sortField'));
+        const field = storage?.field;
+        const sortOrder = storage?.order;
 
+        // Добавление стрелок сортировки сохраненному полю
+        const ths = document.querySelectorAll('[data-name]');
+        ths.forEach(th => {
+            if (th.dataset.name === field) {
+                th.classList.add('sorted');
+                th.dataset.sortOrder = sortOrder;
+            }
+        });
+
+        sortByField(data, list, field, sortOrder);
+    };
+
+    const init = (selectorApp, title) => {
+        const app = document.querySelector(selectorApp);
+        const data = getStorage('phonebook');
         const {
             list,
             logo,
@@ -385,6 +406,7 @@ const data = [
         hoverRow(allRow, logo);
         deleteControl(btnDel, list);
         formControl(form, list, closeModal);
+        sortControlInit(data, list);
         sortControl(table, list);
     };
 

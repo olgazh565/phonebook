@@ -161,10 +161,10 @@ th.sorted::after {
 }
 
 th.sorted[data-sort-order="-1"]::after {
-	content: "▲"
+	content: "▼";
 }
 
 th.sorted[data-sort-order="1"]::after {
-	content: "▼"
+	content: "▲";
 }
 
