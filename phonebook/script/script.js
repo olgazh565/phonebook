@@ -55,7 +55,7 @@
         const btnWrapper = document.createElement('div');
         btnWrapper.classList.add('btn-wrapper');
 
-        const btns = params.map(({ className, type, text }) => {
+        const btns = params.map(({className, type, text}) => {
             const button = document.createElement('button');
             button.type = type;
             button.textContent = text;
@@ -144,7 +144,7 @@
         };
     };
 
-    const createRow = ({ name: firstName, surname, phone }) => {
+    const createRow = ({name: firstName, surname, phone}) => {
         const tr = document.createElement('tr');
         tr.classList.add('contact');
         const tdDel = document.createElement('td');
@@ -235,7 +235,7 @@
         ]);
 
         const table = createTable();
-        const { form, overlay } = createForm();
+        const {form, overlay} = createForm();
         const footer = createFooter();
         const copyrightText = createCopyright(title);
 
@@ -367,6 +367,8 @@
             }
         });
     };
+
+    // Сохранение сортировки по выбранному полю после перезагрузки
 
     const sortControlInit = (data, list) => {
         const storage = JSON.parse(localStorage.getItem('sortField'));
