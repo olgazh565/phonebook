@@ -3,9 +3,9 @@ import {
     setStorage,
     removeStorage,
     setSortStorage,
-} from './serviceStorage.js';
+} from './serviceStorage';
 
-import {renderContacts, addContactPage} from './render.js';
+import {renderContacts, addContactPage} from './render';
 
 export const hoverRow = (allRow, logo) => {
     const text = logo.textContent;
